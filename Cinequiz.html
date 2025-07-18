@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineQuiz - Jeu cinématographique</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+        }
+        
+        .film-reel {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="%23ffffff20" stroke-width="2"/><circle cx="50" cy="50" r="35" fill="none" stroke="%23ffffff20" stroke-width="2"/><circle cx="50" cy="50" r="25" fill="none" stroke="%23ffffff20" stroke-width="2"/><rect x="45" y="10" width="10" height="10" fill="%23ffffff20"/><rect x="45" y="80" width="10" height="10" fill="%23ffffff20"/><rect x="10" y="45" width="10" height="10" fill="%23ffffff20"/><rect x="80" y="45" width="10" height="10" fill="%23ffffff20"/></svg>');
+            background-size: 200px;
+            opacity: 0.1;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+        }
+        
+        .timer-circle {
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 1s linear;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .card {
+            transform-style: preserve-3d;
+            transition: all 0.5s ease;
+        }
+        
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .card-face {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        
+        .card-enter {
+            animation: cardEnter 0.5s ease-out;
+        }
+        
+        @keyframes cardEnter {
+            0% { transform: translateY(50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        
+        .found-card {
+            position: relative;
+        }
+        
+        .found-card::after {
+            content: "✓";
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 25px;
+            height: 25px;
+            background-color: #10B981;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Styles pour la navigation entre pages */
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+
+        /* === NOUVEAUX STYLES POUR LA GRILLE DE FILMS === */
+
+.movie-section {
+    padding: 2rem 0;
+    margin: 2rem 0;
+}
+
+.movie-section h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: white;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.movie-section h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(to right, #f59e0b, #ef4444);
+}
+
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.movie-card {
+    position: relative;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.12);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    aspect-ratio: 2/3;
+    background: #1f2937;
+}
+
+.movie-card:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+.movie-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.movie-card:hover img {
+    transform: scale(1.05);
+}
+
+.movie-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.movie-card:hover::after {
+    opacity: 1;
+}
+
+.movie-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    color: white;
+    font-weight: 600;
+    z-index: 10;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.movie-card:hover .movie-title {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Animation subtile au chargement */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.movie-card {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+/* Délai d'animation pour chaque carte */
+.movie-card:nth-child(1) { animation-delay: 0.1s; }
+.movie-card:nth-child(2) { animation-delay: 0.2s; }
+.movie-card:nth-child(3) { animation-delay: 0.3s; }
+/* ... continuer selon le nombre de cartes ... */
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .movie-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .movie-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
+    }
+    
+    .movie-section h2 {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .movie-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 0.75rem;
+    }
+    
+    .movie-card::after {
+        opacity: 1; /* Toujours visible sur mobile */
+    }
+    
+    .movie-title {
+        opacity: 1; /* Toujours visible sur mobile */
+        transform: translateY(0);
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Optionnel: Effet de focus pour accessibilité */
+.movie-card:focus-within {
+    outline: 2px solid #f59e0b;
+    outline-offset: 2px;
+    transform: scale(1.05);
+}
+
+    </style>
+</head>
+<body class="text-white">
+    <div class="film-reel"></div>
+    
+    <!-- En-tête avec navigation améliorée -->
+    <header class="py-6 px-4 sm:px-6 lg:px-8 border-b border-gray-800">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2 cursor-pointer" data-page="home">
+                <i class="fas fa-film text-2xl text-yellow-400"></i>
+                <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-red-500">CineQuiz</h1>
+            </div>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="#" class="nav-link hover:text-yellow-400 transition" data-page="setup">Jouer</a></li>
+                    <li><a href="#" class="nav-link hover:text-yellow-400 transition" data-page="rules">Règles</a></li>
+                    <li><a href="#" class="nav-link hover:text-yellow-400 transition" data-page="about">À propos</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- Contenu principal -->
+    <main class="container mx-auto px-4 sm:px-6 py-8">
+       <section id="home-page" class="page active max-w-5xl mx-auto">
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-gray-700/50">
+            <!-- Bannière cinéma -->
+            <div class="h-48 bg-gradient-to-r from-yellow-500/30 via-red-500/30 to-purple-500/30 relative overflow-hidden">
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fas fa-film text-8xl text-white/10"></i>
+                </div>
+                <div class="relative z-10 h-full flex flex-col items-center justify-center p-6 text-center">
+                    <h2 class="text-4xl font-bold text-white mb-3">Bienvenue sur <span class="bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-red-400 to-purple-400">CineQuiz</span></h2>
+                    <p class="text-xl text-gray-300 max-w-2xl">Le jeu ultime pour tester vos connaissances cinématographiques entre amis</p>
+                </div>
+            </div>
+            
+            <div class="p-8">
+                <!-- Cartes d'options -->
+                <div class="grid md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-gray-700/50 hover:bg-gray-700/70 transition rounded-xl p-6 border border-gray-600/30 cursor-pointer" data-page="setup">
+                        <div class="text-yellow-400 text-3xl mb-4">
+                            <i class="fas fa-play"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Nouvelle partie</h3>
+                        <p class="text-gray-400">Lancez une partie personnalisée</p>
+                    </div>
+                    
+                    <div class="bg-gray-700/50 hover:bg-gray-700/70 transition rounded-xl p-6 border border-gray-600/30 cursor-pointer" data-page="rules">
+                        <div class="text-red-400 text-3xl mb-4">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Règles du jeu</h3>
+                        <p class="text-gray-400">Apprenez à jouer en 2 minutes</p>
+                    </div>
+                    
+                    <div class="bg-gray-700/50 hover:bg-gray-700/70 transition rounded-xl p-6 border border-gray-600/30 cursor-pointer" data-page="about">
+                        <div class="text-purple-400 text-3xl mb-4">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">À propos</h3>
+                        <p class="text-gray-400">Découvrez CineQuiz</p>
+                    </div>
+                </div>
+                  
+                <!-- Bouton principal -->
+                <div class="text-center">
+                    <button data-page="setup" class="nav-link bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-gray-900 font-bold py-4 px-10 rounded-full text-lg transition-all transform hover:scale-105 shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30">
+                        Commencer une partie <i class="fas fa-play ml-2"></i>
+                    </button>
+                </div>
+                
+        <!-- Bande de films - 20 affiches -->
+    <section class="container mx-auto px-4 sm:px-6 py-8">
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-gray-700/50 p-6">
+            <h2 class="text-2xl font-bold mb-6 text-center">
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-red-500">Notre sélection ciné</span>
+            </h2>
+            
+            <div class="movie-grid">
+                <!-- 1. Pulp Fiction -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BNGNhMDIzZTUtNTBlZi00MTRlLWFjM2ItYzViMjE3YzI5MjljXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_.jpg" 
+                         alt="Pulp Fiction">
+                    <div class="movie-title">Pulp Fiction</div>
+                </div>
+                
+                <!-- 2. The Dark Knight -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_.jpg" 
+                         alt="The Dark Knight">
+                    <div class="movie-title">The Dark Knight</div>
+                </div>
+                
+                <!-- 3. Stranger Things -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BMDZkYmVhNjMtNWU4MC00MDQxLWE3MjYtZGMzZWI1ZjhlOWJmXkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_.jpg" 
+                         alt="Stranger Things">
+                    <div class="movie-title">Stranger Things</div>
+                </div>
+                
+                <!-- 4. Avengers: Endgame -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BMTc5MDE2ODcwNV5BMl5BanBnXkFtZTgwMzI2NzQ2NzM@._V1_.jpg" 
+                         alt="Avengers: Endgame">
+                    <div class="movie-title">Avengers: Endgame</div>
+                </div>
+                
+                <!-- 5. Game of Thrones -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BN2IzYzBiOTQtNGZmMi00NDI5LTgxMzMtN2EzZjA1NjhlOGMxXkEyXkFqcGdeQXVyNjAwNDUxODI@._V1_.jpg" 
+                         alt="Game of Thrones">
+                    <div class="movie-title">Game of Thrones</div>
+                </div>
+                
+                <!-- 6. Inception -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_.jpg" 
+                         alt="Inception">
+                    <div class="movie-title">Inception</div>
+                </div>
+                
+                <!-- 7. The Shawshank Redemption -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BNDE3ODcxYzMtY2YzZC00NmNlLWJiNDMtZDViZWM2MzIxZDYwXkEyXkFqcGdeQXVyNjAwNDUxODI@._V1_.jpg" 
+                         alt="The Shawshank Redemption">
+                    <div class="movie-title">Shawshank Redemption</div>
+                </div>
+                
+                <!-- 8. Breaking Bad -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BYmQ4YWMxYjUtNjZmYi00MDQ1LWFjMjMtNjA5ZDdiYjdiODU5XkEyXkFqcGdeQXVyMTMzNDExODE5._V1_.jpg" 
+                         alt="Breaking Bad">
+                    <div class="movie-title">Breaking Bad</div>
+                </div>
+                
+                <!-- 9. The Godfather -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BM2MyNjYxNmUtYTAwNi00MTYxLWJmNWYtYzZlODY3ZTk3OTFlXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_.jpg" 
+                         alt="The Godfather">
+                    <div class="movie-title">The Godfather</div>
+                </div>
+                
+                <!-- 10. Interstellar -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg" 
+                         alt="Interstellar">
+                    <div class="movie-title">Interstellar</div>
+                </div>
+                
+                <!-- 11. The Witcher -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BN2FiOWU4YzYtMzZiOS00MzcyLTlkOGEtOTgwZmEwMzAxMzA3XkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_.jpg" 
+                         alt="The Witcher">
+                    <div class="movie-title">The Witcher</div>
+                </div>
+                
+                <!-- 12. Fight Club -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BMmEzNTkxYjQtZTc0MC00YTVjLTg5ZTEtZWMwOWVlYzY0NWIwXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_.jpg" 
+                         alt="Fight Club">
+                    <div class="movie-title">Fight Club</div>
+                </div>
+                
+                <!-- 13. The Mandalorian -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BZDhlMzY0ZGItZTcyNS00ZTAxLWIyMmYtZGQ2ODg5OWZiYmJkXkEyXkFqcGdeQXVyODkzNTgxMDg@._V1_.jpg" 
+                         alt="The Mandalorian">
+                    <div class="movie-title">The Mandalorian</div>
+                </div>
+                
+                <!-- 14. Forrest Gump -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BNWIwODRlZTUtY2U3ZS00Yzg1LWJhNzYtMmZiYmEyNmU1NjMzXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_.jpg" 
+                         alt="Forrest Gump">
+                    <div class="movie-title">Forrest Gump</div>
+                </div>
+                
+                <!-- 15. Peaky Blinders -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BMTkzNjEzMDEzMF5BMl5BanBnXkFtZTgwMDI0MjE4MjE@._V1_.jpg" 
+                         alt="Peaky Blinders">
+                    <div class="movie-title">Peaky Blinders</div>
+                </div>
+                
+                <!-- 16. The Matrix -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_.jpg" 
+                         alt="The Matrix">
+                    <div class="movie-title">The Matrix</div>
+                </div>
+                
+                <!-- 17. The Crown -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BZTEyNjBjYmYtYWYxYi00MmQyLThlYmItY2I4NzM1Mjg1MWYxXkEyXkFqcGdeQXVyMTU3ODI3MTk2._V1_.jpg" 
+                         alt="The Crown">
+                    <div class="movie-title">The Crown</div>
+                </div>
+                
+                <!-- 18. Jurassic Park -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BMjM2MDgxMDg0Nl5BMl5BanBnXkFtZTgwNTM2OTM5NDE@._V1_.jpg" 
+                         alt="Jurassic Park">
+                    <div class="movie-title">Jurassic Park</div>
+                </div>
+                
+                <!-- 19. Black Mirror -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BYTM3YWVhMDMtNjczMy00NGEyLWJhZDctYjNhMTRkNDE0ZTI1XkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_.jpg" 
+                         alt="Black Mirror">
+                    <div class="movie-title">Black Mirror</div>
+                </div>
+                
+                <!-- 20. The Social Network -->
+                <div class="movie-card">
+                    <img src="https://m.media-amazon.com/images/M/MV5BOGUyZDUxZjEtMmIzMC00MzlmLTg4MGItZWJmMzBhZjE0Mjc1XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg" 
+                         alt="The Social Network">
+                    <div class="movie-title">The Social Network</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+              
+            </div>
+        </div>
+    </section>
+
+    <!-- Page Règles - Version améliorée -->
+    <section id="rules-page" class="page max-w-5xl mx-auto">
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-gray-700/50">
+            <!-- En-tête avec effet cinéma -->
+            <div class="bg-gradient-to-r from-red-500/30 to-red-700/30 p-6 border-b border-gray-700/50">
+                <h2 class="text-3xl font-bold text-center flex items-center justify-center">
+                    <i class="fas fa-book-open mr-3 text-red-400"></i> 
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-yellow-400">Règles du jeu</span>
+                </h2>
+            </div>
+            
+            <div class="p-8">
+                <!-- Étapes sous forme de timeline -->
+                <div class="relative">
+                    <!-- Ligne de timeline -->
+                    <div class="absolute left-6 top-0 h-full w-0.5 bg-gradient-to-b from-red-500/20 via-yellow-500/20 to-purple-500/20"></div>
+                    
+                    <!-- Étape 1 -->
+                    <div class="relative pl-16 pb-10">
+                        <div class="absolute left-0 top-0 flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-red-700 shadow-lg border-2 border-red-400">
+                            <span class="text-white font-bold text-xl">1</span>
+                        </div>
+                        <div class="bg-gray-700/70 rounded-xl p-6 border-l-4 border-red-400">
+                            <h3 class="text-xl font-semibold text-red-400 mb-3 flex items-center">
+                                <i class="fas fa-users mr-2"></i> Formation des équipes
+                            </h3>
+                            <ul class="space-y-3 pl-5 list-disc text-gray-300">
+                                <li>Divisez-vous en équipes (minimum 2 équipes)</li>
+                                <li>Chaque équipe choisit un nom original</li>
+                                <li>Désignez un premier joueur pour commencer</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Étape 2 -->
+                    <div class="relative pl-16 pb-10">
+                        <div class="absolute left-0 top-0 flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-700 shadow-lg border-2 border-yellow-400">
+                            <span class="text-gray-900 font-bold text-xl">2</span>
+                        </div>
+                        <div class="bg-gray-700/70 rounded-xl p-6 border-l-4 border-yellow-400">
+                            <h3 class="text-xl font-semibold text-yellow-400 mb-3 flex items-center">
+                                <i class="fas fa-gamepad mr-2"></i> Déroulement du jeu
+                            </h3>
+                            <ul class="space-y-3 pl-5 list-disc text-gray-300">
+                                <li><strong class="text-yellow-300">Manche 1 - Description :</strong> Décrivez ce film/série sans le nommer</li>
+                                <li><strong class="text-yellow-300">Manche 2 - Un mot :</strong> Faites deviner avec un seul mot</li>
+                                <li><strong class="text-yellow-300">Manche 3 - Mime :</strong> Silence, action !</li>
+                                <li>Chaque tour dure 1 minute (réglable)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Étape 3 -->
+                    <div class="relative pl-16">
+                        <div class="absolute left-0 top-0 flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 shadow-lg border-2 border-purple-400">
+                            <span class="text-white font-bold text-xl">3</span>
+                        </div>
+                        <div class="bg-gray-700/70 rounded-xl p-6 border-l-4 border-purple-400">
+                            <h3 class="text-xl font-semibold text-purple-400 mb-3 flex items-center">
+                                <i class="fas fa-trophy mr-2"></i> Calcul des points
+                            </h3>
+                            <ul class="space-y-3 pl-5 list-disc text-gray-300">
+                                <li><strong class="text-purple-300">1 point</strong> par carte devinée</li>
+                                <li>Les cartes passées retournent dans la pioche</li>
+                                <li>L'équipe avec le plus de points remporte la partie</li>
+                                <li>En cas d'égalité, une manche supplémentaire!</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bouton de retour -->
+                <div class="mt-8 text-center">
+                    <button data-page="home" class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium transition flex items-center mx-auto">
+                        <i class="fas fa-arrow-left mr-2"></i> Retour à l'accueil
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Page À propos - Version améliorée -->
+    <section id="about-page" class="page max-w-5xl mx-auto">
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-gray-700/50">
+            <!-- En-tête avec effet cinéma -->
+            <div class="bg-gradient-to-r from-purple-500/30 to-blue-500/30 p-6 border-b border-gray-700/50">
+                <h2 class="text-3xl font-bold text-center flex items-center justify-center">
+                    <i class="fas fa-info-circle mr-3 text-purple-400"></i> 
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">À propos</span>
+                </h2>
+            </div>
+            
+            <div class="p-8">
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <!-- Carte Présentation -->
+                    <div class="bg-gray-700/70 rounded-xl p-6 border-l-4 border-purple-400">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center mr-4">
+                                <i class="fas fa-film text-xl text-purple-400"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-purple-400">Qu'est-ce que CineQuiz ?</h3>
+                        </div>
+                        <p class="text-gray-300 mb-4">
+                            CineQuiz est une adaptation numérique du célèbre jeu <strong class="text-purple-300">Time's Up</strong> spécialement conçue pour les passionnés de cinéma.
+                        </p>
+                        <p class="text-gray-300">
+                            Le but est simple : faire deviner à votre équipe un maximum de films, séries, acteurs ou personnages en un temps limité, à travers différentes manches aux règles variées.
+                        </p>
+                    </div>
+                    
+                    <!-- Carte Comment jouer -->
+                    <div class="bg-gray-700/70 rounded-xl p-6 border-l-4 border-blue-400">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center mr-4">
+                                <i class="fas fa-gamepad text-xl text-blue-400"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold text-blue-400">Comment jouer ?</h3>
+                        </div>
+                        <ol class="space-y-3 pl-5 list-decimal text-gray-300">
+                            <li>Configurez votre partie (équipes, durée, cartes)</li>
+                            <li>Lancez le jeu et suivez les instructions</li>
+                            <li>Amusez-vous avec vos amis !</li>
+                            <li>Découvrez qui est le vrai cinéphile</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <!-- Statistiques -->
+                <div class="bg-gray-700/70 rounded-xl p-6 border-l-4 border-yellow-400 mb-8">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center mr-4">
+                            <i class="fas fa-chart-bar text-xl text-yellow-400"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-yellow-400">Statistiques</h3>
+                    </div>
+                    <div class="grid sm:grid-cols-3 gap-4">
+                        <div class="bg-gray-800/50 rounded-lg p-4 text-center">
+                            <div class="text-3xl font-bold text-yellow-400 mb-1">100+</div>
+                            <div class="text-gray-400 text-sm">Cartes disponibles</div>
+                        </div>
+                        <div class="bg-gray-800/50 rounded-lg p-4 text-center">
+                            <div class="text-3xl font-bold text-blue-400 mb-1">3</div>
+                            <div class="text-gray-400 text-sm">Modes de jeu</div>
+                        </div>
+                        <div class="bg-gray-800/50 rounded-lg p-4 text-center">
+                            <div class="text-3xl font-bold text-purple-400 mb-1">1.0</div>
+                            <div class="text-gray-400 text-sm">Version actuelle</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bouton de retour -->
+                <div class="text-center">
+                    <button data-page="home" class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium transition flex items-center mx-auto">
+                        <i class="fas fa-arrow-left mr-2"></i> Retour à l'accueil
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- Page Configuration de partie -->
+        <section id="setup-page" class="page max-w-4xl mx-auto">
+            <div class="bg-gray-800 rounded-xl shadow-2xl p-6 mb-8 border border-gray-700">
+                <h2 class="text-2xl font-bold mb-6 text-center">Configurer votre partie</h2>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Configuration des équipes -->
+                    <div class="space-y-6">
+                        <h3 class="text-xl font-semibold flex items-center">
+                            <i class="fas fa-users mr-2 text-yellow-400"></i> Équipes
+                        </h3>
+                        
+                        <div id="teams-container">
+                            <div class="team-input mb-4 flex items-center">
+                                <input type="text" class="flex-grow bg-gray-700 border border-gray-600 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400" placeholder="Nom de l'équipe">
+                                <button class="remove-team bg-red-600 hover:bg-red-700 px-3 py-2 rounded-r-lg transition">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="team-input mb-4 flex items-center">
+                                <input type="text" class="flex-grow bg-gray-700 border border-gray-600 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400" placeholder="Nom de l'équipe">
+                                <button class="remove-team bg-red-600 hover:bg-red-700 px-3 py-2 rounded-r-lg transition">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button id="add-team" class="flex items-center text-yellow-400 hover:text-yellow-300 transition">
+                            <i class="fas fa-plus-circle mr-2"></i> Ajouter une équipe
+                        </button>
+                    </div>
+                    
+                    <!-- Options du jeu -->
+                    <div class="space-y-6">
+                        <h3 class="text-xl font-semibold flex items-center">
+                            <i class="fas fa-cog mr-2 text-yellow-400"></i> Options
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block mb-2">Durée par tour</label>
+                                <select id="timer-duration" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                                    <option value="30">30 secondes</option>
+                                    <option value="45">45 secondes</option>
+                                    <option value="60" selected>60 secondes</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block mb-2">Nombre de manches</label>
+                                <select id="rounds-count" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                                    <option value="1">1 manche</option>
+                                    <option value="2">2 manches</option>
+                                    <option value="3" selected>3 manches</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block mb-2">Nombre de cartes</label>
+                                <select id="cards-count" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                                    <option value="10">10 cartes</option>
+                                    <option value="20">20 cartes</option>
+                                    <option value="30" selected>30 cartes</option>
+                                    <option value="40">40 cartes</option>
+                                    <option value="50">50 cartes</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block mb-2">Catégories</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" checked class="rounded text-yellow-400 focus:ring-yellow-400" data-category="films">
+                                        <span>Films</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" checked class="rounded text-yellow-400 focus:ring-yellow-400" data-category="series">
+                                        <span>Séries</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" class="rounded text-yellow-400 focus:ring-yellow-400" data-category="acteurs">
+                                        <span>Acteurs</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" class="rounded text-yellow-400 focus:ring-yellow-400" data-category="personnages">
+                                        <span>Personnages</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 text-center">
+                    <button id="start-game" class="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-gray-900 font-bold py-3 px-8 rounded-full text-lg transition-all transform hover:scale-105 shadow-lg">
+                        Commencer la partie <i class="fas fa-play ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Écran de jeu (caché initialement) -->
+        <section id="game-screen" class="hidden max-w-4xl mx-auto">
+            <!-- Tableau des scores -->
+            <div class="bg-gray-800 rounded-xl shadow-lg p-4 mb-6 border border-gray-700">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-400">Manche:</span>
+                        <span id="current-round" class="font-bold">1/3</span>
+                    </div>
+                    
+                    <div id="teams-score" class="flex space-x-6">
+                        <!-- Rempli dynamiquement avec les équipes et scores -->
+                    </div>
+                    
+                    <div class="timer-container relative w-12 h-12">
+                        <svg class="w-full h-full" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="#374151" stroke-width="8"/>
+                            <circle id="timer-circle" class="timer-circle" cx="50" cy="50" r="45" fill="none" stroke="#f59e0b" stroke-width="8" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                        </svg>
+                        <span id="timer" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold">60</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Carte de jeu -->
+            <div class="relative h-96 mb-8 perspective-1000">
+                <div id="game-card" class="card w-full h-full relative">
+                    <div class="card-face bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl p-8 flex flex-col items-center justify-center border-2 border-yellow-400">
+                        <div class="text-center card-enter">
+                            <div class="mb-6">
+                                <span id="round-type" class="inline-block px-3 py-1 bg-yellow-400 text-gray-900 rounded-full text-sm font-semibold">Tour 1 - Description</span>
+                            </div>
+                            <h3 id="current-card" class="text-3xl md:text-4xl font-bold mb-4">Pulp Fiction</h3>
+                            <p id="round-instruction" class="text-gray-400 mb-6">Décrivez ce film/série sans le nommer</p>
+                            <div class="flex justify-center space-x-4">
+                                <button class="success-btn bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition">
+                                    <i class="fas fa-check mr-2"></i> Trouvé
+                                </button>
+                                <button class="skip-btn bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-medium transition">
+                                    <i class="fas fa-forward mr-2"></i> Passer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cartes trouvées -->
+            <div id="found-cards-container" class="hidden bg-gray-800 rounded-xl shadow-lg p-4 mb-6 border border-gray-700">
+                <h3 class="text-lg font-semibold mb-3">Cartes trouvées par <span id="current-team-name" class="text-yellow-400">Équipe 1</span>:</h3>
+                <div id="found-cards" class="flex flex-wrap gap-2">
+                    <!-- Rempli dynamiquement avec les cartes trouvées -->
+                </div>
+            </div>
+            
+            <!-- Contrôles du jeu -->
+            <div class="flex justify-center">
+                <button id="end-game" class="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium transition flex items-center">
+                    <i class="fas fa-stop mr-2"></i> Arrêter la partie
+                </button>
+            </div>
+        </section>
+        
+        <!-- Transition entre manches (caché initialement) -->
+        <section id="round-transition" class="hidden max-w-4xl mx-auto bg-gray-800 rounded-xl shadow-2xl p-8 border border-gray-700 text-center">
+            <h2 class="text-3xl font-bold mb-6">Fin du tour de <span id="transition-team" class="text-yellow-400">Équipe 1</span></h2>
+            <div class="mb-8">
+                <p class="text-xl mb-2">Cartes trouvées: <span id="cards-found-count" class="font-bold text-yellow-400">5</span></p>
+                <p class="text-gray-400">Prochaine équipe: <span id="next-team-name" class="font-semibold">Équipe 2</span></p>
+            </div>
+            <div id="round-results" class="grid md:grid-cols-2 gap-6 mb-8">
+                <!-- Rempli dynamiquement avec les équipes et scores -->
+            </div>
+            <button id="next-round" class="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-gray-900 font-bold py-3 px-8 rounded-full text-lg transition-all transform hover:scale-105 shadow-lg">
+                Tour suivant <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </section>
+        
+        <!-- Écran des résultats (caché initialement) -->
+        <section id="results-screen" class="hidden max-w-4xl mx-auto bg-gray-800 rounded-xl shadow-2xl p-8 border border-gray-700">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold mb-2">Résultats finaux</h2>
+                <p class="text-gray-400">Félicitations à l'équipe gagnante!</p>
+            </div>
+            
+            <div id="final-results" class="grid md:grid-cols-2 gap-6 mb-8">
+                <!-- Rempli dynamiquement avec les équipes et scores finaux -->
+            </div>
+            
+            <div class="text-center">
+                <button id="new-game" class="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-gray-900 font-bold py-3 px-8 rounded-full text-lg transition-all transform hover:scale-105 shadow-lg">
+                    Nouvelle partie <i class="fas fa-redo ml-2"></i>
+                </button>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Pied de page -->
+    <footer class="py-6 px-4 border-t border-gray-800 mt-12">
+        <div class="container mx-auto text-center text-gray-500">
+            <p>© 2023 CineQuiz - Un jeu de société cinématographique</p>
+            <div class="flex justify-center space-x-4 mt-4">
+                <a href="#" class="hover:text-yellow-400 transition"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="hover:text-yellow-400 transition"><i class="fab fa-facebook"></i></a>
+                <a href="#" class="hover:text-yellow-400 transition"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // =============================================
+            // GESTION DE LA NAVIGATION ENTRE PAGES
+            // =============================================
+            
+            // Fonction pour afficher une page spécifique
+            function showPage(pageId) {
+                // Masquer toutes les pages
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.remove('active');
+                });
+                
+                // Afficher la page demandée
+                const pageElement = document.getElementById(`${pageId}-page`);
+                if (pageElement) {
+                    pageElement.classList.add('active');
+                }
+                
+                // Masquer l'écran de jeu si on n'est pas en train de jouer
+                if (pageId !== 'game') {
+                    document.getElementById('game-screen').classList.add('hidden');
+                }
+            }
+            
+            // Gestion des clics sur les liens de navigation
+            document.querySelectorAll('[data-page]').forEach(element => {
+                element.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const pageId = this.getAttribute('data-page');
+                    showPage(pageId);
+                });
+            });
+            
+            // Afficher la page d'accueil par défaut
+            showPage('home');
+            
+            // =============================================
+            // ÉTAT DU JEU ET DONNÉES
+            // =============================================
+            
+            // État global du jeu
+            const gameState = {
+                teams: [],
+                currentTeam: 0,
+                round: 1,
+                maxRounds: 3,
+                timerDuration: 60,
+                cards: [],
+                remainingCards: [],
+                currentCard: null,
+                timerInterval: null,
+                scoreThisRound: 0,
+                foundCardsThisRound: [],
+                allFoundCards: [],
+                roundTypes: [
+                    { name: "Description", instruction: "Décrivez ce film/série sans le nommer" },
+                    { name: "Un mot", instruction: "Faites deviner avec un seul mot" },
+                    { name: "Mime", instruction: "Faites deviner sans parler (mimes)" }
+                ]
+            };
+            
+            // Exemples de cartes par catégorie
+            const sampleCards = {
+                films: [
+                    { name: "Pulp Fiction", year: 1994 },
+                    { name: "Inception", year: 2010 },
+                    { name: "The Dark Knight", year: 2008 },
+                    { name: "Fight Club", year: 1999 },
+                    { name: "The Shawshank Redemption", year: 1994 },
+                    { name: "The Matrix", year: 1999 },
+                    { name: "Forrest Gump", year: 1994 },
+                    { name: "The Godfather", year: 1972 },
+                    { name: "Interstellar", year: 2014 },
+                    { name: "Gladiator", year: 2000 },
+                    { name: "Titanic", year: 1997 },
+                    { name: "Avatar", year: 2009 },
+                    { name: "Jurassic Park", year: 1993 },
+                    { name: "Back to the Future", year: 1985 },
+                    { name: "The Lion King", year: 1994 },
+                    { name: "Star Wars: Episode IV", year: 1977 },
+                    { name: "E.T. the Extra-Terrestrial", year: 1982 },
+                    { name: "Indiana Jones", year: 1981 },
+                    { name: "The Terminator", year: 1984 },
+                    { name: "Alien", year: 1979 }
+                ],
+                series: [
+                    { name: "Breaking Bad", year: 2008 },
+                    { name: "Game of Thrones", year: 2011 },
+                    { name: "Stranger Things", year: 2016 },
+                    { name: "The Mandalorian", year: 2019 },
+                    { name: "The Witcher", year: 2019 },
+                    { name: "Peaky Blinders", year: 2013 },
+                    { name: "The Boys", year: 2019 },
+                    { name: "Money Heist", year: 2017 },
+                    { name: "The Crown", year: 2016 },
+                    { name: "Black Mirror", year: 2011 },
+                    { name: "Friends", year: 1994 },
+                    { name: "The Office", year: 2005 },
+                    { name: "The Big Bang Theory", year: 2007 },
+                    { name: "House of Cards", year: 2013 },
+                    { name: "Narcos", year: 2015 },
+                    { name: "Dexter", year: 2006 },
+                    { name: "The Walking Dead", year: 2010 },
+                    { name: "Sherlock", year: 2010 },
+                    { name: "Westworld", year: 2016 },
+                    { name: "The Sopranos", year: 1999 }
+                ],
+                acteurs: [
+                    { name: "Leonardo DiCaprio" },
+                    { name: "Tom Hanks" },
+                    { name: "Meryl Streep" },
+                    { name: "Brad Pitt" },
+                    { name: "Jennifer Lawrence" },
+                    { name: "Denzel Washington" },
+                    { name: "Emma Watson" },
+                    { name: "Robert Downey Jr." },
+                    { name: "Scarlett Johansson" },
+                    { name: "Johnny Depp" },
+                    { name: "Will Smith" },
+                    { name: "Tom Cruise" },
+                    { name: "Angelina Jolie" },
+                    { name: "Natalie Portman" },
+                    { name: "Christian Bale" },
+                    { name: "Matt Damon" },
+                    { name: "Charlize Theron" },
+                    { name: "Ryan Reynolds" },
+                    { name: "Chris Hemsworth" },
+                    { name: "Anne Hathaway" }
+                ],
+                personnages: [
+                    { name: "Tony Stark (Iron Man)" },
+                    { name: "Walter White (Breaking Bad)" },
+                    { name: "Jon Snow (Game of Thrones)" },
+                    { name: "Harry Potter" },
+                    { name: "Darth Vader (Star Wars)" },
+                    { name: "Hannibal Lecter" },
+                    { name: "Ellen Ripley (Alien)" },
+                    { name: "James Bond" },
+                    { name: "Indiana Jones" },
+                    { name: "The Joker" },
+                    { name: "Batman" },
+                    { name: "Superman" },
+                    { name: "Spider-Man" },
+                    { name: "Wonder Woman" },
+                    { name: "Gandalf (Le Seigneur des Anneaux)" },
+                    { name: "Frodo Baggins (Le Seigneur des Anneaux)" },
+                    { name: "Katniss Everdeen (Hunger Games)" },
+                    { name: "Jack Sparrow (Pirates des Caraïbes)" },
+                    { name: "Neo (Matrix)" },
+                    { name: "Marty McFly (Retour vers le futur)" }
+                ]
+            };
+            
+            // =============================================
+            // ÉLÉMENTS DU DOM
+            // =============================================
+            const setupSection = document.getElementById('setup-page');
+            const gameScreen = document.getElementById('game-screen');
+            const roundTransition = document.getElementById('round-transition');
+            const resultsScreen = document.getElementById('results-screen');
+            const startGameBtn = document.getElementById('start-game');
+            const endGameBtn = document.getElementById('end-game');
+            const newGameBtn = document.getElementById('new-game');
+            const nextRoundBtn = document.getElementById('next-round');
+            const addTeamBtn = document.getElementById('add-team');
+            const teamsContainer = document.getElementById('teams-container');
+            const teamsScoreElement = document.getElementById('teams-score');
+            const roundResultsElement = document.getElementById('round-results');
+            const finalResultsElement = document.getElementById('final-results');
+            const currentCardElement = document.getElementById('current-card');
+            const roundTypeElement = document.getElementById('round-type');
+            const roundInstructionElement = document.getElementById('round-instruction');
+            const currentRoundElement = document.getElementById('current-round');
+            const transitionTeamElement = document.getElementById('transition-team');
+            const nextTeamNameElement = document.getElementById('next-team-name');
+            const cardsFoundCountElement = document.getElementById('cards-found-count');
+            const currentTeamNameElement = document.getElementById('current-team-name');
+            const foundCardsContainer = document.getElementById('found-cards-container');
+            const foundCardsElement = document.getElementById('found-cards');
+            const timerElement = document.getElementById('timer');
+            const timerCircle = document.getElementById('timer-circle');
+            const timerDurationSelect = document.getElementById('timer-duration');
+            const roundsCountSelect = document.getElementById('rounds-count');
+            const cardsCountSelect = document.getElementById('cards-count');
+            
+            // =============================================
+            // GESTION DES ÉQUIPES
+            // =============================================
+            
+            // Ajouter une équipe
+            addTeamBtn.addEventListener('click', function() {
+                const teamInput = document.createElement('div');
+                teamInput.className = 'team-input mb-4 flex items-center';
+                teamInput.innerHTML = `
+                    <input type="text" class="flex-grow bg-gray-700 border border-gray-600 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400" placeholder="Nom de l'équipe">
+                    <button class="remove-team bg-red-600 hover:bg-red-700 px-3 py-2 rounded-r-lg transition">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                teamsContainer.appendChild(teamInput);
+                
+                // Ajouter l'événement pour supprimer l'équipe
+                teamInput.querySelector('.remove-team').addEventListener('click', function() {
+                    if (teamsContainer.children.length > 2) {
+                        teamsContainer.removeChild(teamInput);
+                    } else {
+                        alert('Vous devez avoir au moins 2 équipes !');
+                    }
+                });
+            });
+            
+            // Supprimer une équipe (pour les équipes initiales)
+            document.querySelectorAll('.remove-team').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (teamsContainer.children.length > 2) {
+                        teamsContainer.removeChild(btn.parentElement);
+                    } else {
+                        alert('Vous devez avoir au moins 2 équipes !');
+                    }
+                });
+            });
+            
+            // =============================================
+            // DÉMARRAGE DU JEU
+            // =============================================
+            
+            startGameBtn.addEventListener('click', function() {
+                // Récupérer les noms des équipes
+                const teamInputs = teamsContainer.querySelectorAll('input');
+                if (teamInputs.length < 2) {
+                    alert('Ajoutez au moins 2 équipes pour commencer !');
+                    return;
+                }
+                
+                gameState.teams = Array.from(teamInputs).map(input => ({
+                    name: input.value || `Équipe ${Array.from(teamInputs).indexOf(input) + 1}`,
+                    score: 0,
+                    foundCards: []
+                }));
+                
+                // Récupérer les options du jeu
+                gameState.timerDuration = parseInt(timerDurationSelect.value);
+                gameState.maxRounds = parseInt(roundsCountSelect.value);
+                const cardsCount = parseInt(cardsCountSelect.value);
+                
+                // Préparer les cartes selon les catégories sélectionnées
+                gameState.cards = [];
+                const selectedCategories = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.dataset.category);
+                
+                selectedCategories.forEach(category => {
+                    if (sampleCards[category]) {
+                        gameState.cards = gameState.cards.concat(sampleCards[category]);
+                    }
+                });
+                
+                if (gameState.cards.length === 0) {
+                    alert('Sélectionnez au moins une catégorie !');
+                    return;
+                }
+                
+                // Mélanger et limiter les cartes
+                shuffleCards(gameState.cards);
+                gameState.cards = gameState.cards.slice(0, cardsCount);
+                gameState.remainingCards = [...gameState.cards];
+                gameState.allFoundCards = [];
+                
+                // Mettre à jour l'affichage des scores
+                updateTeamsScoreDisplay();
+                
+                // Cacher la configuration, afficher l'écran de jeu
+                showPage('');
+                gameScreen.classList.remove('hidden');
+                
+                // Commencer la première manche
+                startRound();
+            });
+            
+            // =============================================
+            // FONCTIONS DU JEU
+            // =============================================
+            
+            // Commencer une manche
+            function startRound() {
+                // Réinitialiser l'état de la manche
+                gameState.scoreThisRound = 0;
+                gameState.foundCardsThisRound = [];
+                
+                // Afficher le conteneur des cartes trouvées
+                foundCardsContainer.classList.remove('hidden');
+                foundCardsElement.innerHTML = '';
+                
+                // Mettre à jour le nom de l'équipe actuelle
+                currentTeamNameElement.textContent = gameState.teams[gameState.currentTeam].name;
+                
+                // Mettre à jour l'interface pour la manche actuelle
+                currentRoundElement.textContent = `${gameState.round}/${gameState.maxRounds}`;
+                const roundType = gameState.roundTypes[gameState.round - 1];
+                roundTypeElement.textContent = `Tour ${gameState.round} - ${roundType.name}`;
+                roundInstructionElement.textContent = roundType.instruction;
+                
+                // Réinitialiser le timer
+                resetTimer();
+                
+                // Tirer la première carte
+                drawNextCard();
+                
+                // Démarrer le timer
+                startTimer();
+            }
+            
+            // Tirer une nouvelle carte
+            function drawNextCard() {
+                if (gameState.remainingCards.length === 0) {
+                    // Plus de cartes, fin de la manche
+                    endRound();
+                    return;
+                }
+                
+                // Prendre la prochaine carte
+                gameState.currentCard = gameState.remainingCards.pop();
+                currentCardElement.textContent = gameState.currentCard.name;
+                
+                // Ajouter une animation
+                const cardContent = document.querySelector('#game-card .card-face > div');
+                cardContent.classList.add('card-enter');
+                setTimeout(() => {
+                    cardContent.classList.remove('card-enter');
+                }, 500);
+            }
+            
+            // Gestion d'une carte réussie
+            function handleCardSuccess() {
+                // Ajouter aux cartes trouvées
+                gameState.foundCardsThisRound.push(gameState.currentCard);
+                gameState.allFoundCards.push(gameState.currentCard);
+                gameState.teams[gameState.currentTeam].foundCards.push(gameState.currentCard);
+                
+                // Mettre à jour l'affichage des cartes trouvées
+                updateFoundCardsDisplay();
+                
+                // Incrémenter le score
+                gameState.teams[gameState.currentTeam].score++;
+                gameState.scoreThisRound++;
+                
+                // Mettre à jour l'affichage du score
+                updateTeamsScoreDisplay();
+                
+                // Vérifier si toutes les cartes ont été trouvées
+                if (gameState.allFoundCards.length === gameState.cards.length) {
+                    endRound();
+                    return;
+                }
+                
+                // Tirer la prochaine carte
+                drawNextCard();
+            }
+            
+            // Gestion d'une carte passée
+            function handleCardSkip() {
+                // Remettre la carte dans le jeu (à une position aléatoire)
+                const randomPos = Math.floor(Math.random() * gameState.remainingCards.length);
+                gameState.remainingCards.splice(randomPos, 0, gameState.currentCard);
+                
+                // Tirer la prochaine carte
+                drawNextCard();
+            }
+            
+            // Mettre à jour l'affichage des cartes trouvées
+            function updateFoundCardsDisplay() {
+                foundCardsElement.innerHTML = '';
+                gameState.foundCardsThisRound.forEach(card => {
+                    const cardElement = document.createElement('div');
+                    cardElement.className = 'found-card bg-gray-700 px-3 py-2 rounded-lg';
+                    cardElement.textContent = card.name;
+                    foundCardsElement.appendChild(cardElement);
+                });
+            }
+            
+            // Mettre à jour l'affichage des scores des équipes
+            function updateTeamsScoreDisplay() {
+                teamsScoreElement.innerHTML = '';
+                gameState.teams.forEach((team, index) => {
+                    const teamElement = document.createElement('div');
+                    teamElement.className = `flex items-center space-x-2 ${index === gameState.currentTeam ? 'text-yellow-400' : 'text-gray-400'}`;
+                    teamElement.innerHTML = `
+                        <span class="font-bold">${team.name}:</span>
+                        <span class="text-xl">${team.score}</span>
+                    `;
+                    teamsScoreElement.appendChild(teamElement);
+                });
+            }
+            
+            // Mettre à jour les résultats de la manche
+            function updateRoundResultsDisplay() {
+                roundResultsElement.innerHTML = '';
+                gameState.teams.forEach((team, index) => {
+                    const teamElement = document.createElement('div');
+                    teamElement.className = `bg-gray-700 rounded-lg p-6 ${index === gameState.currentTeam ? 'border-l-4 border-yellow-400' : ''}`;
+                    teamElement.innerHTML = `
+                        <h3 class="text-xl font-bold mb-4 ${index === gameState.currentTeam ? 'flex items-center' : ''}">
+                            ${index === gameState.currentTeam ? '<i class="fas fa-trophy text-yellow-400 mr-2"></i>' : ''}
+                            ${team.name}
+                        </h3>
+                        <div class="text-4xl font-bold ${index === gameState.currentTeam ? 'text-yellow-400' : 'text-gray-400'}">${team.score}</div>
+                        ${index === gameState.currentTeam ? `<div class="mt-2 text-sm text-yellow-400">+${gameState.scoreThisRound} cartes trouvées</div>` : ''}
+                    `;
+                    roundResultsElement.appendChild(teamElement);
+                });
+                
+                // Mettre à jour les informations de l'écran de transition
+                transitionTeamElement.textContent = gameState.teams[gameState.currentTeam].name;
+                cardsFoundCountElement.textContent = gameState.scoreThisRound;
+                
+                const nextTeamIndex = (gameState.currentTeam + 1) % gameState.teams.length;
+                nextTeamNameElement.textContent = gameState.teams[nextTeamIndex].name;
+            }
+            
+            // Mettre à jour les résultats finaux
+            function updateFinalResultsDisplay() {
+                // Trier les équipes par score (décroissant)
+                const sortedTeams = [...gameState.teams].sort((a, b) => b.score - a.score);
+                
+                finalResultsElement.innerHTML = '';
+                sortedTeams.forEach((team, index) => {
+                    const teamElement = document.createElement('div');
+                    teamElement.className = `bg-gray-700 rounded-lg p-6 ${index === 0 ? 'border-l-4 border-yellow-400' : ''}`;
+                    teamElement.innerHTML = `
+                        <h3 class="text-xl font-bold mb-4 ${index === 0 ? 'flex items-center' : ''}">
+                            ${index === 0 ? '<i class="fas fa-trophy text-yellow-400 mr-2"></i>' : ''}
+                            ${team.name}
+                        </h3>
+                        <div class="text-4xl font-bold ${index === 0 ? 'text-yellow-400' : 'text-gray-400'}">${team.score}</div>
+                        <div class="mt-2 text-sm text-gray-400">${team.foundCards.length} cartes trouvées</div>
+                        ${index === 0 ? '<div class="mt-2 text-sm text-yellow-400">Gagnant!</div>' : ''}
+                    `;
+                    finalResultsElement.appendChild(teamElement);
+                });
+            }
+            
+            // Démarrer le timer
+            function startTimer() {
+                let timeLeft = gameState.timerDuration;
+                timerElement.textContent = timeLeft;
+                
+                // Calculer la circonférence : 2πr (r = 45 dans notre SVG)
+                const circumference = 2 * Math.PI * 45;
+                timerCircle.style.strokeDasharray = circumference;
+                
+                gameState.timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerElement.textContent = timeLeft;
+                    
+                    // Mettre à jour la progression du cercle
+                    const offset = circumference - (timeLeft / gameState.timerDuration) * circumference;
+                    timerCircle.style.strokeDashoffset = offset;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(gameState.timerInterval);
+                        endRound();
+                    }
+                }, 1000);
+            }
+            
+            // Réinitialiser le timer
+            function resetTimer() {
+                if (gameState.timerInterval) {
+                    clearInterval(gameState.timerInterval);
+                }
+                timerElement.textContent = gameState.timerDuration;
+                timerCircle.style.strokeDashoffset = 283;
+            }
+            
+            // Mélanger les cartes (algorithme Fisher-Yates)
+            function shuffleCards(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+            
+            // Terminer une manche
+            function endRound() {
+                // Arrêter le timer
+                resetTimer();
+                
+                // Masquer le conteneur des cartes trouvées
+                foundCardsContainer.classList.add('hidden');
+                
+                // Passer à l'équipe suivante
+                gameState.currentTeam = (gameState.currentTeam + 1) % gameState.teams.length;
+                
+                // Vérifier si on doit passer à la manche suivante
+                if (gameState.currentTeam === 0 || gameState.allFoundCards.length === gameState.cards.length) {
+                    gameState.round++;
+                    
+                    // Vérifier si la partie est terminée
+                    if (gameState.round > gameState.maxRounds) {
+                        endGame();
+                        return;
+                    }
+                    
+                    // Réinitialiser toutes les cartes pour la nouvelle manche (sauf celles déjà trouvées)
+                    gameState.remainingCards = gameState.cards.filter(card => 
+                        !gameState.allFoundCards.some(found => found.name === card.name)
+                    );
+                    
+                    // Si toutes les cartes ont été trouvées, réinitialiser pour la manche suivante
+                    if (gameState.allFoundCards.length === gameState.cards.length) {
+                        gameState.allFoundCards = [];
+                        gameState.remainingCards = [...gameState.cards];
+                    }
+                    
+                    shuffleCards(gameState.remainingCards);
+                } else {
+                    // Pour l'équipe suivante dans la même manche, ne montrer que les cartes non trouvées
+                    gameState.remainingCards = gameState.cards.filter(card => 
+                        !gameState.allFoundCards.some(found => found.name === card.name)
+                    );
+                    shuffleCards(gameState.remainingCards);
+                }
+                
+                // Afficher l'écran de transition entre manches
+                updateRoundResultsDisplay();
+                gameScreen.classList.add('hidden');
+                roundTransition.classList.remove('hidden');
+            }
+            
+            // Terminer la partie
+            function endGame() {
+                // Arrêter le timer
+                resetTimer();
+                
+                // Masquer l'écran de jeu, afficher les résultats
+                gameScreen.classList.add('hidden');
+                roundTransition.classList.add('hidden');
+                resultsScreen.classList.remove('hidden');
+                
+                // Mettre à jour l'affichage des résultats finaux
+                updateFinalResultsDisplay();
+            }
+            
+            // Réinitialiser l'état du jeu
+            function resetGameState() {
+                // Réinitialiser toutes les variables d'état
+                gameState.teams = [];
+                gameState.currentTeam = 0;
+                gameState.round = 1;
+                gameState.remainingCards = [];
+                gameState.currentCard = null;
+                gameState.scoreThisRound = 0;
+                gameState.foundCardsThisRound = [];
+                gameState.allFoundCards = [];
+                
+                // Réinitialiser la durée du timer par défaut
+                timerDurationSelect.value = "60";
+                roundsCountSelect.value = "3";
+                cardsCountSelect.value = "30";
+                
+                // Réinitialiser les cases à cocher des catégories
+                document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    if (cb.dataset.category === 'films' || cb.dataset.category === 'series') {
+                        cb.checked = true;
+                    } else {
+                        cb.checked = false;
+                    }
+                });
+            }
+            
+            // =============================================
+            // ÉVÉNEMENTS DU JEU
+            // =============================================
+            
+            // Fin du jeu
+            endGameBtn.addEventListener('click', function() {
+                endGame();
+                showPage('home');
+            });
+            
+            // Nouvelle partie
+            newGameBtn.addEventListener('click', function() {
+                resultsScreen.classList.add('hidden');
+                showPage('setup');
+                resetGameState();
+            });
+            
+            // Manche suivante
+            nextRoundBtn.addEventListener('click', function() {
+                roundTransition.classList.add('hidden');
+                gameScreen.classList.remove('hidden');
+                startRound();
+            });
+            
+            // Boutons de réussite et de passage
+            document.querySelectorAll('.success-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    handleCardSuccess();
+                });
+            });
+            
+            document.querySelectorAll('.skip-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    handleCardSkip();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
