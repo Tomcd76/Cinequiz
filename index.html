@@ -52,6 +52,44 @@
     font-weight: 600;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #1f2937;
+    border-radius: 0.5rem;
+    border: 1px solid #374151;
+    width: 90%;
+    max-width: 500px;
+    padding: 1.5rem;
+    animation: modalEnter 0.3s ease-out;
+}
+
+@keyframes modalEnter {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.btn-validate {
+    background: linear-gradient(to right, #10b981, #34d399);
+    color: white;
+}
+
+.btn-cancel {
+    background: #6b7280;
+    color: white;
+}
     .timer-circle {
         stroke-dasharray: 283;
         stroke-dashoffset: 283;
@@ -1591,56 +1629,119 @@
             // DÉMARRAGE DU JEU
             // =============================================
             
-            startGameBtn.addEventListener('click', function() {
-                // Récupérer les noms des équipes
-                const teamInputs = teamsContainer.querySelectorAll('input');
-                if (teamInputs.length < 2) {
-                    alert('Ajoutez au moins 2 équipes pour commencer !');
-                    return;
-                }
+            startGameBtn.addEventListener('click', async function() {
+                // Désactiver le bouton pendant le chargement
+                startGameBtn.disabled = true;
+                startGameBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Préparation...';
                 
-                gameState.teams = Array.from(teamInputs).map(input => ({
-                    name: input.value || `Équipe ${Array.from(teamInputs).indexOf(input) + 1}`,
-                    score: 0,
-                    foundCards: []
-                }));
-                
-                // Récupérer les options du jeu
-                gameState.timerDuration = parseInt(timerDurationSelect.value);
-                gameState.maxRounds = parseInt(roundsCountSelect.value);
-                const cardsCount = parseInt(cardsCountSelect.value);
-                
-                // Préparer les cartes selon les catégories sélectionnées
-                gameState.cards = [];
-                const selectedCategories = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.dataset.category);
-                
-                selectedCategories.forEach(category => {
-                    if (sampleCards[category]) {
-                        gameState.cards = gameState.cards.concat(sampleCards[category]);
+                try {
+                    // 1. Récupérer les noms des équipes
+                    const teamInputs = teamsContainer.querySelectorAll('input');
+                    if (teamInputs.length < 2) {
+                        alert('Ajoutez au moins 2 équipes pour commencer !');
+                        return;
                     }
-                });
+                    
+                    gameState.teams = Array.from(teamInputs).map((input, index) => ({
+                        name: input.value.trim() || `Équipe ${index + 1}`,
+                        score: 0,
+                        foundCards: []
+                    }));
+
+                    // 2. Récupérer les options du jeu
+                    gameState.timerDuration = parseInt(timerDurationSelect.value) || 60;
+                    gameState.maxRounds = parseInt(roundsCountSelect.value) || 3;
+                    const totalCards = parseInt(cardsCountSelect.value) || 30;
+                    
+                    // 3. Vérifier les catégories sélectionnées
+                    const selectedCategories = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                                                .map(cb => cb.dataset.category)
+                                                .filter(Boolean);
+                    
+                    if (selectedCategories.length === 0) {
+                        alert('Sélectionnez au moins une catégorie !');
+                        return;
+                    }
+
+                    // 4. Demander les cartes personnalisées
+                    let customCards = [];
+                    const wantCustomCards = await askCustomCardsOption();
+                    
+                    if (wantCustomCards) {
+                        customCards = await collectCustomCards(gameState.teams);
+                        customCards = filterDuplicateCards(customCards);
+                        
+                        // Limiter à 2 cartes par équipe
+                        const maxCustomCards = 1 * gameState.teams.length;
+                        customCards = customCards.slice(0, maxCustomCards);
+                        
+                        // Afficher un récapitulatif
+                        if (customCards.length > 0) {
+                            alert(`${customCards.length} cartes personnalisées ajoutées :\n\n${
+                                customCards.map(c => `- ${c.name} (${c.team})`).join('\n')
+                            }`);
+                        }
+                    }
+
+                    // 5. Préparer les cartes standards
+                    gameState.cards = [];
+                    selectedCategories.forEach(category => {
+                        if (sampleCards[category]) {
+                            gameState.cards.push(...sampleCards[category]);
+                        }
+                    });
+                    
+                    shuffleCards(gameState.cards);
+                    
+                    // Calculer le nombre de cartes standards à garder
+                    const standardCardsCount = Math.max(0, totalCards - customCards.length);
+                    gameState.cards = gameState.cards.slice(0, standardCardsCount);
+                    
+                    // 6. Fusionner avec les cartes perso
+                    gameState.cards = [...gameState.cards, ...customCards];
+                    gameState.remainingCards = [...gameState.cards];
+                    gameState.allFoundCards = [];
+                    
+                    // 7. Vérifier qu'on a assez de cartes
+                    if (gameState.cards.length < 10) {
+                        alert(`Attention : seulement ${gameState.cards.length} cartes disponibles. 
+                            Ajoutez plus de catégories ou de cartes personnalisées.`);
+                        return;
+                    }
+
+                    // 8. Mettre à jour l'interface
+                    updateTeamsScoreDisplay();
+                    showPage('');
+                    gameScreen.classList.remove('hidden');
+                    
+                    // 9. Démarrer la partie
+                    startRound();
+
+                } catch (error) {
+                    console.error("Erreur:", error);
+                    alert("Une erreur est survenue lors du démarrage du jeu.");
+                } finally {
+                    // Réactiver le bouton
+                    startGameBtn.disabled = false;
+                    startGameBtn.innerHTML = 'Commencer la partie <i class="fas fa-play ml-2"></i>';
+                }
+            });
+
+            // Fonction pour filtrer les doublons
+            function filterDuplicateCards(cards) {
+                const uniqueCards = [];
+                const seen = new Set();
                 
-                if (gameState.cards.length === 0) {
-                    alert('Sélectionnez au moins une catégorie !');
-                    return;
+                for (const card of cards) {
+                    const lowerName = card.name.toLowerCase().trim();
+                    if (!seen.has(lowerName)) {
+                        seen.add(lowerName);
+                        uniqueCards.push(card);
+                    }
                 }
                 
-                // Mélanger et limiter les cartes
-                shuffleCards(gameState.cards);
-                gameState.cards = gameState.cards.slice(0, cardsCount);
-                gameState.remainingCards = [...gameState.cards];
-                gameState.allFoundCards = [];
-                
-                // Mettre à jour l'affichage des scores
-                updateTeamsScoreDisplay();
-                
-                // Cacher la configuration, afficher l'écran de jeu
-                showPage('');
-                gameScreen.classList.remove('hidden');
-                
-                // Commencer la première manche
-                startRound();
-            });
+                return uniqueCards;
+            }
             
             // =============================================
             // FONCTIONS DU JEU
@@ -2022,6 +2123,80 @@ if (gameState.remainingCards.length > 0) {
         gameState.currentCardType = "inconnu";
     }
 }
+}
+
+async function askCustomCardsOption() {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3 class="text-xl font-bold mb-4">Options spéciales</h3>
+                <p class="mb-6">Voulez-vous que chaque équipe ajoute des cartes personnalisées ?</p>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <button id="custom-yes" class="btn-validate py-2 px-4 rounded-lg">
+                        Oui, ajouter des cartes
+                    </button>
+                    <button id="custom-no" class="btn-cancel py-2 px-4 rounded-lg">
+                        Non, démarrer directement
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        document.getElementById('custom-yes').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            resolve(true);
+        });
+
+        document.getElementById('custom-no').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            resolve(false);
+        });
+    });
+}
+async function collectCustomCards(teams) {
+    const customCards = [];
+    
+    for (const team of teams) {
+        const teamCards = await getTeamCustomCards(team);
+        customCards.push(...teamCards);
+    }
+    
+    return customCards;
+}
+
+async function getTeamCustomCards(team) {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3 class="text-xl font-bold mb-4">${team.name} - Ajouter une carte</h3>
+                <div class="space-y-4 mb-6">
+                    <input type="text" id="card1" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" placeholder="Carte">
+                </div>
+                <button id="submit-cards" class="btn-validate w-full py-2 px-4 rounded-lg">
+                    Valider
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        document.getElementById('submit-cards').addEventListener('click', () => {
+            const card1 = document.getElementById('card1').value.trim();
+            const cards = [];
+            
+            if (card1) cards.push({ name: card1, custom: true });
+            
+            document.body.removeChild(modal);
+            resolve(cards);
+        });
+    });
 }
     </script>
 </body>
