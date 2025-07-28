@@ -1,3 +1,397 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CineQuiz - Jeu cinématographique</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="film-reel"></div>
+
+    <header class="py-4 px-4 sm:px-6 border-b border-gray-800 sticky top-0 bg-gray-900/80 backdrop-blur-sm z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2 cursor-pointer" data-page="home">
+                <i class="fas fa-film text-2xl text-yellow-400"></i>
+                <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-red-500">CineQuiz</h1>
+            </div>
+
+            <button class="mobile-menu-btn md:hidden text-xl" id="mobile-menu-button">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <nav id="main-nav">
+                <button class="close-menu-btn md:hidden" id="close-menu-button">
+                    <i class="fas fa-times"></i>
+                </button>
+                <ul class="flex space-x-6 md:space-x-8">
+                    <label class="theme-switch">
+                    <input type="checkbox" id="theme-toggle" class="theme-switch-input">
+                    <span class="theme-switch-slider">
+                        <span class="theme-switch-knob"></span>
+                        <span class="theme-icons">
+                        <i class="fas fa-moon"></i>
+                        <i class="fas fa-sun"></i>
+                        </span>
+                    </span>
+                    </label>
+                    <li><a href="#" class="nav-link hover:text-yellow-400 transition" data-page="home">Accueil</a></li>
+                    <li><a href="#" class="nav-link hover:text-yellow-400 transition" data-page="setup">Jouer</a></li>
+                    <li><a href="#" class="nav-link hover:text-yellow-400 transition" data-page="rules">Règles</a></li>
+                    <li><a href="#" class="nav-link hover:text-yellow-400 transition" data-page="about">À propos</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 py-8">
+        <!-- Home Page -->
+        <section id="home-page" class="page active max-w-5xl mx-auto">
+            <div class="bg-gray-800/90 rounded-2xl shadow-2xl border border-gray-700/50 p-6">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-3">Bienvenue sur <span class="bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-red-400">CineQuiz</span></h2>
+                    <p class="text-lg text-gray-300">Testez vos connaissances cinématographiques !</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-gray-700/50 hover:bg-gray-700/70 rounded-xl p-6 border border-gray-600/30 cursor-pointer transition-all hover:scale-[1.02]" data-page="setup">
+                        <i class="fas fa-play text-3xl text-yellow-400 mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">Nouvelle partie</h3>
+                        <p class="text-gray-400">Lancez une partie personnalisée</p>
+                    </div>
+
+                    <div class="bg-gray-700/50 hover:bg-gray-700/70 rounded-xl p-6 border border-gray-600/30 cursor-pointer transition-all hover:scale-[1.02]" data-page="rules">
+                        <i class="fas fa-book-open text-3xl text-red-400 mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">Règles du jeu</h3>
+                        <p class="text-gray-400">Apprenez à jouer</p>
+                    </div>
+
+                    <div class="bg-gray-700/50 hover:bg-gray-700/70 rounded-xl p-6 border border-gray-600/30 cursor-pointer transition-all hover:scale-[1.02]" data-page="about">
+                        <i class="fas fa-info-circle text-3xl text-purple-400 mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">À propos</h3>
+                        <p class="text-gray-400">Découvrez CineQuiz</p>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button data-page="setup" class="btn-primary">
+                        Commencer une partie <i class="fas fa-play ml-2"></i>
+                    </button>
+                </div>
+
+                <div class="movie-grid mt-8">
+                    <div class="movie-card">
+                        <img src="https://m.media-amazon.com/images/M/MV5BNGNhMDIzZTUtNTBlZi00MTRlLWFjM2ItYzViMjE3YzI5MjljXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_.jpg" alt="Pulp Fiction" loading="lazy">
+                        <div class="movie-title">Pulp Fiction</div>
+                    </div>
+                    <div class="movie-card">
+                        <img src="https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_.jpg" alt="The Dark Knight" loading="lazy">
+                        <div class="movie-title">The Dark Knight</div>
+                    </div>
+                    <div class="movie-card">
+                        <img src="https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg" alt="The Shawshank Redemption" loading="lazy">
+                        <div class="movie-title">The Shawshank Redemption</div>
+                    </div>
+                    <div class="movie-card">
+                        <img src="https://m.media-amazon.com/images/M/MV5BM2MyNjYxNmUtYTAwNi00MTYxLWJmNWYtYzZlODY3ZTk3OTFlXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_.jpg" alt="The Godfather" loading="lazy">
+                        <div class="movie-title">The Godfather</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Rules Page -->
+        <section id="rules-page" class="page max-w-5xl mx-auto">
+            <div class="bg-gray-800/90 rounded-2xl shadow-2xl border border-gray-700/50 p-6">
+                <h2 class="text-2xl font-bold mb-6 text-center">Règles du jeu</h2>
+
+                <div class="space-y-6">
+                    <div class="bg-gray-700/70 rounded-xl p-6">
+                        <h3 class="text-xl font-semibold text-yellow-400 mb-3">1. Formation des équipes</h3>
+                        <ul class="space-y-2 list-disc pl-5 text-gray-300">
+                            <li>Divisez-vous en <strong>au moins 2 équipes</strong>.</li>
+                            <li>Chaque équipe choisit un nom.</li>
+                            <li>Configurez les options de la partie : durée des tours, nombre de cartes, etc.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-gray-700/70 rounded-xl p-6">
+                        <h3 class="text-xl font-semibold text-yellow-400 mb-3">2. Déroulement du jeu (3 Manches)</h3>
+                        <ul class="space-y-2 list-disc pl-5 text-gray-300">
+                            <li><strong>Manche 1 - Description :</strong> Faites deviner le mot sur la carte en parlant librement, mais sans dire le mot exact ou une partie du mot.</li>
+                            <li><strong>Manche 2 - Un mot :</strong> Faites deviner avec <strong>un seul et unique mot</strong>.</li>
+                            <li><strong>Manche 3 - Mime :</strong> Faites deviner uniquement par des gestes et des mimes. Aucun son n'est autorisé.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-gray-700/70 rounded-xl p-6">
+                        <h3 class="text-xl font-semibold text-yellow-400 mb-3">3. Points et Tours</h3>
+                        <ul class="space-y-2 list-disc pl-5 text-gray-300">
+                            <li>Chaque équipe joue à tour de rôle. Le tour s'arrête quand le chronomètre est à zéro.</li>
+                            <li>Les cartes trouvées rapportent <strong>1 point</strong>.</li>
+                            <li>Les cartes passées ou non trouvées à la fin du chrono restent dans la pioche pour le joueur suivant.</li>
+                            <li>Quand toutes les cartes ont été trouvées, la manche est terminée. On remet <strong>toutes les cartes</strong> dans la pioche et on passe à la manche suivante !</li>
+                            <li>L'équipe avec le plus de points à la fin des 3 manches gagne.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <button data-page="home" class="btn-secondary px-6 py-2 rounded-lg">
+                        <i class="fas fa-home mr-2"></i> Retour à l'accueil
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Page -->
+        <section id="about-page" class="page max-w-5xl mx-auto">
+            <div class="bg-gray-800/90 rounded-2xl shadow-2xl border border-gray-700/50 p-6">
+                <h2 class="text-2xl font-bold mb-6 text-center">À propos</h2>
+
+                <div class="space-y-6">
+                    <div class="bg-gray-700/70 rounded-xl p-6">
+                        <p class="text-gray-300 mb-4">CineQuiz est un jeu inspiré de Time's Up, conçu pour les passionnés de cinéma. Faites deviner films, séries, acteurs et personnages à votre équipe !</p>
+                        <p class="text-gray-300">Parfait pour les soirées entre amis ou en famille, CineQuiz teste vos connaissances cinématographiques et votre capacité à faire deviner sous contraintes.</p>
+                    </div>
+
+                    <div class="grid sm:grid-cols-3 gap-4">
+                        <div class="bg-gray-700/70 rounded-lg p-4 text-center">
+                            <div class="text-3xl font-bold text-yellow-400">400+</div>
+                            <div class="text-gray-400">Cartes</div>
+                        </div>
+                        <div class="bg-gray-700/70 rounded-lg p-4 text-center">
+                            <div class="text-3xl font-bold text-yellow-400">6</div>
+                            <div class="text-gray-400">Catégories</div>
+                        </div>
+                        <div class="bg-gray-700/70 rounded-lg p-4 text-center">
+                            <div class="text-3xl font-bold text-yellow-400">3</div>
+                            <div class="text-gray-400">Modes de jeu</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-700/70 rounded-xl p-6">
+                        <h3 class="text-xl font-semibold text-yellow-400 mb-3">Crédits</h3>
+                        <p class="text-gray-300">Développé avec <i class="fas fa-heart text-red-400"></i> par des passionnés de cinéma</p>
+                        <p class="text-gray-400 text-sm mt-2">Version 3.5 - Juillet 2025</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <button data-page="home" class="btn-secondary px-6 py-2 rounded-lg">
+                        <i class="fas fa-home mr-2"></i> Retour à l'accueil
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Setup Page -->
+        <section id="setup-page" class="page max-w-4xl mx-auto">
+            <div class="bg-gray-800 rounded-xl shadow-2xl p-6 border border-gray-700">
+                <h2 class="text-2xl font-bold mb-6 text-center">Configurer votre partie</h2>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <h3 class="text-xl font-semibold">Équipes</h3>
+                        <div id="teams-container">
+                            <!-- Les équipes seront ajoutées ici par JS -->
+                        </div>
+                        <button id="add-team" class="text-yellow-400 hover:text-yellow-300 transition">
+                            <i class="fas fa-plus-circle mr-2"></i>Ajouter une équipe 
+                        </button>
+                        <button id="add-custom-card" class="btn-secondary">
+                        <i class="fas fa-plus-circle mr-2"></i> Ajouter une carte personnalisée
+                        </button>
+                        <div id="custom-cards-container" class="space-y-2 mt-4"></div>
+                    </div>
+
+
+                    <div class="space-y-4">
+                        <h3 class="text-xl font-semibold">Options</h3>
+
+                        <div>
+                            <label class="block mb-2">Durée par tour</label>
+                            <select id="timer-duration" class="input-field w-full">
+                                <option value="10">10 secondes</option>
+                                <option value="30">30 secondes</option>
+                                <option value="60" selected>60 secondes</option>
+                                <option value="90">90 secondes</option>
+                                <option value="1000000">10000000 secondes</option>
+
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block mb-2">Nombre de cartes</label>
+                            <select id="cards-count" class="input-field w-full">
+                                <option value="10">10 cartes</option>
+                                <option value="20">20 cartes</option>
+                                <option value="30" selected>30 cartes</option>
+                                <option value="40">40 cartes</option>
+                                <option value="50">50 cartes</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block mb-2">Catégories</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="checkbox-container">
+                                    <input type="checkbox" checked data-category="films" class="checkbox-input">
+                                    <span>Films</span>
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" checked data-category="series" class="checkbox-input">
+                                    <span>Séries</span>
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" data-category="acteurs" class="checkbox-input">
+                                    <span>Acteurs</span>
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" data-category="personnages" class="checkbox-input">
+                                    <span>Personnages</span>
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" data-category="dessinsAnimes" class="checkbox-input">
+                                    <span>Dessins Animés</span>
+                                </label>
+                                <label class="checkbox-container">
+                                    <input type="checkbox" data-category="jeuxVideo" class="checkbox-input">
+                                    <span>Jeux Vidéo</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 text-center">
+                    <button id="start-game" class="btn-primary">
+                        Commencer la partie <i class="fas fa-play ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Screen -->
+        <section id="game-screen" class="hidden max-w-4xl mx-auto">
+            <div class="game-screen-header">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-400">Manche:</span>
+                        <span id="current-round" class="font-bold">1/3</span>
+                    </div>
+
+                    <div id="teams-score" class="flex flex-wrap justify-center gap-x-4 gap-y-1"></div>
+
+                    <div class="timer-container">
+                        <svg class="w-full h-full" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="#374151" stroke-width="8"/>
+                            <circle id="timer-circle" class="timer-circle" cx="50" cy="50" r="45" fill="none" stroke="#f59e0b" stroke-width="8" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                        </svg>
+                        <span id="timer" class="timer-text">60</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative h-64 sm:h-80 md:h-96 mb-8">
+                <div class="card-container">
+                    <div id="game-card" class="card">
+                        <div class="card-face card-front">
+                            <span id="card-type-badge" class="card-type-badge"></span>
+                            <div class="card-content">
+                                <span id="round-type" class="round-type-badge"></span>
+                                <h3 id="current-card" class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-center"></h3>
+                                <p id="round-instruction" class="text-gray-400 mb-6"></p>
+                                <div class="card-actions">
+                                    <button class="success-btn btn-success px-6 py-2 rounded-lg">
+                                        <i class="fas fa-check mr-2"></i>Trouvé
+                                    </button>
+                                    <button class="skip-btn btn-secondary px-6 py-2 rounded-lg">
+                                        <i class="fas fa-forward mr-2"></i>Passer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-face card-back">
+                            <div class="back-card-content">
+                                <div class="card-category"></div>
+                                <p class="text-gray-300">Préparez-vous...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="found-cards-container" class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                <h3 class="text-lg font-semibold mb-3">Cartes trouvées par <span id="current-team-name" class="text-yellow-400"></span>:</h3>
+                <div id="found-cards" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <div class="mt-6 text-center">
+                <button id="end-game" class="btn-danger px-6 py-2 rounded-lg">
+                    <i class="fas fa-stop mr-2"></i>Arrêter la partie
+                </button>
+            </div>
+        </section>
+
+        <!-- Round Transition -->
+        <section id="round-transition" class="hidden max-w-4xl mx-auto bg-gray-800 rounded-xl shadow-2xl p-8 border border-gray-700 text-center">
+            <h2 id="transition-title" class="text-3xl font-bold mb-6"></h2>
+            <div id="transition-info">
+                <p class="text-xl mb-2">Cartes trouvées ce tour : <span id="cards-found-count" class="font-bold text-yellow-400"></span></p>
+                <p class="text-gray-400">Au tour de <span id="next-team-name" class="font-semibold"></span></p>
+            </div>
+            
+            <div id="round-results" class="grid md:grid-cols-2 gap-6 mt-8"></div>
+
+            <button id="next-round" class="btn-primary mt-8">
+                Tour suivant <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+        </section>
+
+        <!-- Results Screen -->
+        <section id="results-screen" class="hidden max-w-4xl mx-auto bg-gray-800 rounded-xl shadow-2xl p-8 border border-gray-700 text-center">
+            <h2 class="text-3xl font-bold mb-4">Résultats finaux</h2>
+            <p class="text-gray-400 mb-8">Félicitations à l'équipe gagnante !</p>
+
+            <div id="final-results" class="space-y-4 mb-8"></div>
+
+            <button id="new-game" class="btn-primary">
+                Nouvelle partie <i class="fas fa-redo ml-2"></i>
+            </button>
+
+        </section>
+
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="modal-overlay">
+            <div class="modal-content text-center">
+                <div class="loading-spinner"></div>
+                <h3 class="text-xl font-bold mt-4">Préparation de la partie...</h3>
+                <p class="text-gray-400 mt-2">Mélange des cartes</p>
+            </div>
+        </div>
+
+        <!-- Custom Card Modal -->
+        <div id="custom-card-modal-overlay" class="modal-overlay">
+            <div class="modal-content">
+                <h3 id="modal-title" class="text-xl font-bold mb-4"></h3>
+                <div id="modal-body"></div>
+                <div id="modal-footer" class="mt-6 flex justify-end gap-3"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-6 px-4 border-t border-gray-800 mt-12 text-center text-gray-500 text-sm">
+        <p>© 2025 CineQuiz - Inspiré par Time's Up</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
 document.addEventListener('DOMContentLoaded', function() {
     // =============================================
     // ÉTAT GLOBAL DU JEU
@@ -1054,3 +1448,853 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+:root {
+    --film-color: #000000;
+    --serie-color: #ff0000;
+    --acteur-color: #6604d4;
+    --personnage-color: #82066f;
+    --dessin-anime-color: #01879f;
+    --jeu-video-color: #389a06;
+    --primary-gradient: linear-gradient(to right, #f59e0b, #f97316);
+    --success-gradient: linear-gradient(to right, #10b981, #34d399);
+    --danger-gradient: linear-gradient(to right, #ef4444, #f87171);
+    --text-color: #ffffff;
+    --bg-color: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    --card-bg: linear-gradient(135deg, #374151, #2a3444);
+    --card-back-bg: linear-gradient(135deg, #2a3444, #4b5b6e);
+    --secondary-bg: #374151;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg-color);
+    min-height: 100vh;
+    color: var(--text-color);
+    overflow-x: hidden;
+    transition: background 0.3s ease, color 0.3s ease;
+    font-size: clamp(16px, 2.5vw, 18px);
+    line-height: 1.5;
+}
+
+/* Light Mode Styles */
+body.light-mode {
+    --bg-color: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    --text-color: #1f2937;
+    --card-bg: linear-gradient(135deg, #ffffff, #f3f4f6);
+    --card-back-bg: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+    --secondary-bg: #e5e7eb;
+}
+
+.film-reel {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="%23ffffff20" stroke-width="2"/><circle cx="50" cy="50" r="35" fill="none" stroke="%23ffffff20" stroke-width="2"/><circle cx="50" cy="50" r="25" fill="none" stroke="%23ffffff20" stroke-width="2"/><rect x="45" y="10" width="10" height="10" fill="%23ffffff20"/><rect x="45" y="80" width="10" height="10" fill="%23ffffff20"/><rect x="10" y="45" width="10" height="10" fill="%23ffffff20"/><rect x="80" y="45" width="10" height="10" fill="%23ffffff20"/></svg>');
+    background-size: clamp(100px, 20vw, 200px);
+    opacity: 0.1;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+}
+
+body.light-mode .film-reel {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="%2311182720" stroke-width="2"/><circle cx="50" cy="50" r="35" fill="none" stroke="%2311182720" stroke-width="2"/><circle cx="50" cy="50" r="25" fill="none" stroke="%2311182720" stroke-width="2"/><rect x="45" y="10" width="10" height="10" fill="%2311182720"/><rect x="45" y="80" width="10" height="10" fill="%2311182720"/><rect x="10" y="45" width="10" height="10" fill="%2311182720"/><rect x="80" y="45" width="10" height="10" fill="%2311182720"/></svg>');
+    opacity: 0.05;
+}
+
+/* Header & Footer */
+body.light-mode header {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    border-color: #e5e7eb !important;
+}
+
+body.light-mode footer {
+    border-color: #e5e7eb;
+    color: #6b7280;
+}
+
+/* Navigation */
+.nav-link {
+    position: relative;
+    padding: clamp(0.5rem, 2vw, 0.75rem) 0;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+    font-size: clamp(14px, 2vw, 16px);
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--text-color);
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+/* Text & Backgrounds */
+body.light-mode .bg-gray-800\/90 {
+    background-color: rgba(249, 250, 251, 0.9);
+}
+body.light-mode .border-gray-700\/50 {
+    border-color: rgba(229, 231, 235, 0.5);
+}
+body.light-mode .bg-gray-700\/70,
+body.light-mode .bg-gray-700\/50 {
+    background-color: #f3f4f6;
+}
+body.light-mode .bg-gray-800, 
+body.light-mode .bg-gray-700 {
+    background-color: #ffffff;
+}
+body.light-mode .border-gray-700, 
+body.light-mode .border-gray-600\/30 {
+    border-color: #e5e7eb;
+}
+
+body.light-mode .text-gray-300 {
+    color: #4b5563;
+}
+body.light-mode .text-gray-400 {
+    color: #6b7280;
+}
+body.light-mode h1, body.light-mode h2, body.light-mode h3, body.light-mode h4, body.light-mode p {
+    color: var(--text-color);
+}
+body.light-mode .text-yellow-400 {
+    color: #f59e0b;
+}
+
+/* Cards */
+.card-container {
+    perspective: 1500px;
+    width: 100%;
+    height: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.card {
+    position: relative;
+    width: 100%;
+    height: clamp(200px, 40vw, 300px);
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    border-radius: 1.5rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+body.light-mode .card {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1.5rem;
+    padding: clamp(0.5rem, 2vw, 1rem);
+    box-sizing: border-box;
+}
+
+.card-front {
+    background: var(--card-bg);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+}
+
+body.light-mode .card-front {
+    border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.card-back {
+    background: var(--card-back-bg);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color);
+    transform: rotateY(180deg);
+    font-size: clamp(2rem, 8vw, 3rem);
+    font-weight: 600;
+    opacity: 50%;
+}
+
+body.light-mode .card-back {
+    border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.card-flipped {
+    transform: rotateY(180deg);
+}
+
+.round-type-badge {
+    position: relative;
+    bottom: clamp(10px, 2vw, 15px);
+    font-size: clamp(0.75rem, 1.5vw, 1rem);
+    padding: clamp(0.2rem, 1vw, 0.25rem) clamp(0.4rem, 1.5vw, 0.5rem);
+    border-radius: 9999px;
+    text-transform: uppercase;
+    font-weight: 600;
+    z-index: 10;
+    background: #9CA3AF;
+    color: rgb(0, 0, 0);
+    opacity: 90%;
+}
+
+.card-type-badge {
+    position: absolute;
+    top: clamp(0.5rem, 2vw, 1rem);
+    right: clamp(0.5rem, 2vw, 1rem);
+    font-size: clamp(0.75rem, 1.5vw, 1rem);
+    padding: clamp(0.2rem, 1vw, 0.25rem) clamp(0.4rem, 1.5vw, 0.5rem);
+    border-radius: 9999px;
+    text-transform: uppercase;
+    font-weight: 600;
+    z-index: 10;
+    background: var(--film-color);
+    color: white;
+    opacity: 50%;
+}
+
+/* Timer */
+.timer-container {
+    position: relative;
+    width: clamp(2rem, 6vw, 3rem);
+    height: clamp(2rem, 6vw, 3rem);
+}
+
+.timer-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    font-size: clamp(0.75rem, 2vw, 1rem);
+    color: var(--text-color);
+}
+
+/* Movie Grid */
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(100px, 25vw, 150px), 1fr));
+    gap: clamp(0.5rem, 2vw, 1rem);
+    padding: clamp(0.5rem, 2vw, 1rem);
+}
+
+.movie-card {
+    position: relative;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    aspect-ratio: 2/3;
+    background: var(--secondary-bg);
+}
+
+body.light-mode .movie-card {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.movie-card:hover {
+    transform: translateY(-5px) scale(1.03);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+
+body.light-mode .movie-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
+}
+
+.movie-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.movie-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: clamp(0.5rem, 2vw, 0.75rem);
+    color: white;
+    font-weight: 600;
+    font-size: clamp(0.75rem, 1.5vw, 0.875rem);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+}
+
+body.light-mode .movie-title {
+    color: #111827;
+    background: linear-gradient(to top, rgba(240, 240, 240, 0.9), transparent);
+}
+
+/* Found Cards */
+.found-card {
+    position: relative;
+    background: var(--secondary-bg);
+    padding: clamp(0.5rem, 2vw, 1rem);
+    border-radius: 0.5rem;
+    font-size: clamp(0.75rem, 1.5vw, 0.875rem);
+    color: var(--text-color);
+}
+
+body.light-mode .found-card {
+    border: 1px solid #d1d5db;
+    background-color: #ffffff;
+}
+
+.found-card::after {
+    content: "✓";
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: clamp(15px, 3vw, 20px);
+    height: clamp(15px, 3vw, 20px);
+    background-color: #10B981;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: clamp(0.5rem, 1.5vw, 0.75rem);
+}
+
+/* Pages */
+.page {
+    display: none;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.page.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Buttons */
+.btn-primary, .btn-success, .btn-danger, .btn-secondary {
+    padding: clamp(0.5rem, 2vw, 0.75rem) clamp(1rem, 3vw, 1.5rem);
+    border-radius: 9999px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    font-weight: 600;
+    font-size: clamp(0.875rem, 2vw, 1rem);
+}
+
+.btn-primary:hover, .btn-success:hover, .btn-danger:hover, .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary { background: var(--primary-gradient); color: white; }
+.btn-success { background: var(--success-gradient); color: white; }
+.btn-danger { background: var(--danger-gradient); color: white; }
+.btn-secondary { background: var(--secondary-bg); color: var(--text-color); }
+
+body.light-mode .btn-secondary {
+    background-color: #d1d5db;
+    border: 1px solid #c0c2c5;
+}
+
+/* Toggle Switch */
+.theme-switch {
+    --size: clamp(1.25rem, 3vw, 1.5rem);
+    --knob-size: calc(var(--size) - 0.5rem);
+    --transition: all 0.4s cubic-bezier(0.65, 0.05, 0.36, 1);
+    position: relative;
+    display: inline-block;
+    width: calc(var(--size) * 2.2);
+    height: var(--size);
+    margin-left: clamp(0.5rem, 2vw, 1rem);
+}
+
+.theme-switch-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.theme-switch-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: linear-gradient(145deg, #3a3a3a, #4a4a4a);
+    border-radius: 100px;
+    box-shadow: 
+        inset 2px 2px 4px rgba(0,0,0,0.3),
+        inset -2px -2px 4px rgba(255,255,255,0.05);
+    transition: var(--transition);
+}
+
+.theme-switch-knob {
+    position: absolute;
+    height: var(--knob-size);
+    width: var(--knob-size);
+    left: 0.25rem;
+    bottom: 0.25rem;
+    background: linear-gradient(145deg, #f8f8f8, #e6e6e6);
+    border-radius: 50%;
+    box-shadow: 
+        2px 2px 4px rgba(0,0,0,0.3),
+        -2px -2px 4px rgba(255,255,255,0.1);
+    transition: var(--transition);
+    z-index: 2;
+}
+
+.theme-icons {
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.theme-icons i {
+    position: absolute;
+    font-size: calc(var(--size) * 0.6);
+    top: 50%;
+    transform: translateY(-50%);
+    transition: var(--transition);
+    color: rgba(255,255,255,0.7);
+}
+
+.theme-icons .fa-moon {
+    left: calc(var(--size) * 0.3);
+}
+
+.theme-icons .fa-sun {
+    right: calc(var(--size) * 0.3);
+    opacity: 0;
+}
+
+.light-mode .theme-switch-slider {
+    background: linear-gradient(145deg, #e6e6e6, #ffffff);
+}
+
+.light-mode .theme-switch-knob {
+    transform: translateX(calc(var(--size) * 1.1));
+    background: linear-gradient(145deg, #ffd700, #ffaa00);
+    box-shadow: 
+        2px 2px 6px rgba(0,0,0,0.2),
+        -2px -2px 6px rgba(255,255,255,0.8);
+}
+
+.light-mode .fa-moon {
+    opacity: 0;
+    transform: translateY(-50%) rotate(90deg);
+}
+
+.light-mode .fa-sun {
+    opacity: 1;
+    color: #ff9500;
+}
+
+.theme-switch-input:active + .theme-switch-slider .theme-switch-knob {
+    width: calc(var(--knob-size) * 1.2);
+}
+
+.theme-switch-input:checked:active + .theme-switch-slider .theme-switch-knob {
+    transform: translateX(calc(var(--size) * 1.2 - 0.2rem));
+}
+
+/* Mobile Menu */
+@media (max-width: 768px) {
+    .mobile-menu-btn {
+        display: block;
+    }
+    nav {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: min(80%, 300px);
+        height: 100vh;
+        background: #1f2937;
+        z-index: 1000;
+        transition: right 0.3s ease;
+        padding: clamp(1rem, 5vw, 2rem);
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+    }
+    body.light-mode nav {
+        background: #ffffff;
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    }
+    nav.active {
+        right: 0;
+    }
+    nav ul {
+        flex-direction: column;
+        gap: clamp(1rem, 3vw, 1.5rem);
+        margin-top: clamp(2rem, 5vw, 3rem);
+    }
+    .nav-link {
+        font-size: clamp(1rem, 3vw, 1.2rem);
+    }
+    .close-menu-btn {
+        position: absolute;
+        top: clamp(0.5rem, 2vw, 1rem);
+        right: clamp(0.5rem, 2vw, 1rem);
+        font-size: clamp(1.25rem, 3vw, 1.5rem);
+    }
+}
+
+@media (max-width: 480px) {
+    /* ===============================
+       AJUSTEMENTS GÉNÉRAUX
+    =============================== */
+    body {
+        font-size: 16px;
+        -webkit-text-size-adjust: 100%; /* Empêche le zoom automatique du texte sur iOS */
+    }
+
+    /* ===============================
+       CONTENEUR DE LA CARTE
+    =============================== */
+    .card-container {
+        width: 92vw;
+        height: 60vh;
+        max-width: none;
+        margin: 2vh auto;
+        perspective: 1000px;
+    }
+
+    /* ===============================
+       STYLE DE LA CARTE
+    =============================== */
+    .card {
+        height: 100%;
+        min-height: auto;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-face {
+        padding: 1.5rem;
+        justify-content: space-between; /* Meilleure répartition de l'espace */
+    }
+
+    .card-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+    }
+
+    /* ===============================
+       TEXTE ET CONTENU
+    =============================== */
+    #current-card {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-grow: 1;
+
+        font-size: 2.2rem;
+        line-height: 1.3;
+        text-align: center;
+        word-break: break-word;
+
+        max-width: 100%;
+        margin: 1rem 0;
+        padding: 0 1rem;
+        overflow: hidden;
+    }
+
+    #round-instruction {
+        font-size: 1.2rem;
+        margin: 1rem 0;
+        color: rgba(255, 255, 255, 0.9);
+        text-align: center;
+    }
+
+    .card-category {
+        font-size: 5rem; /* Taille de la police de la catégorie */
+    }
+
+    .back-card-content p {
+        text-align: center;
+    }
+
+    /* ===============================
+       BADGES
+    =============================== */
+    .round-type-badge {
+        font-size: 0.8rem;
+        padding: 0.5rem 1rem;
+        margin-bottom: 0.5rem;
+        position: static;
+    }
+
+    .card-type-badge {
+        top: 1rem;
+        right: 1rem;
+        font-size: 0.55rem;
+        padding: 0.5rem 0.8rem;
+        opacity: 0.7;
+    }
+
+    /* ===============================
+       CARTE ARRIÈRE
+    =============================== */
+    .card-back {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background: var(--card-back-bg);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: var(--text-color);
+
+        transform: rotateY(180deg);
+        font-weight: 600;
+        opacity: 50%;
+
+        padding: 1rem; /* Évite que le texte touche les bords */
+    }
+
+    /* ===============================
+       BOUTONS
+    =============================== */
+    .card-actions {
+        display: flex;
+        gap: 0.8rem;
+        width: 100%;
+        margin-top: auto; /* Pousse les boutons vers le bas */
+    }
+
+    .success-btn,
+    .skip-btn {
+        flex: 1;
+        padding: 1.2rem 0;
+        font-size: 1.2rem;
+        border-radius: 12px;
+    }
+
+
+
+#found-cards-container {
+        margin-top: 10rem; /* Plus d'espace sur mobile */
+        padding: 1.25rem;
+    }
+
+    /* Réduire légèrement la hauteur de la carte pour libérer de l'espace */
+    .card-container {
+        height: 50vh; /* Au lieu de 60vh */
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+body.light-mode .modal-overlay {
+    background: rgba(31, 41, 55, 0.5);
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    background: #2a3444;
+    border-radius: 0.5rem;
+    border: 1px solid #374151;
+    width: min(90%, 500px);
+    padding: clamp(1rem, 3vw, 1.5rem);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+    color: var(--text-color);
+}
+
+body.light-mode .modal-content {
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0);
+}
+
+/* Input Styles */
+.input-field {
+    background: #1f2937;
+    border: 1px solid #4b5563;
+    border-radius: 0.5rem;
+    padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 2.5vw, 1rem);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    width: 100%;
+    font-size: clamp(0.875rem, 2vw, 1rem);
+}
+
+body.light-mode .input-field {
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    color: #1f2937;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+/* Checkbox Styles */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.3rem, 1vw, 0.5rem);
+    cursor: pointer;
+}
+
+.checkbox-container span {
+    color: var(--text-color);
+    font-size: clamp(0.875rem, 2vw, 1rem);
+}
+
+.checkbox-input {
+    appearance: none;
+    width: clamp(1rem, 2.5vw, 1.25rem);
+    height: clamp(1rem, 2.5vw, 1.25rem);
+    border: 2px solid #4b5563;
+    border-radius: 0.25rem;
+    background: var(--secondary-bg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+body.light-mode .checkbox-input {
+    border: 1px solid #ffffff;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+.checkbox-input:checked {
+    background: #f59e0b;
+    border-color: #f59e0b;
+}
+
+.checkbox-input:checked::after {
+    content: "✓";
+    display: block;
+    color: rgb(0, 0, 0);
+    text-align: center;
+    font-weight: bold;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    line-height: 1;
+}
+
+/* Team Input */
+.team-input {
+    display: flex;
+    margin-bottom: clamp(0.75rem, 2vw, 1rem);
+}
+
+.team-input input {
+    flex-grow: 1;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.team-input button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.75rem, 2.5vw, 1rem);
+}
+
+/* Game Screen */
+.game-screen-header {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 0.5rem;
+    padding: clamp(0.75rem, 2vw, 1rem);
+    margin-bottom: clamp(1rem, 3vw, 1.5rem);
+}
+
+body.light-mode .game-screen-header {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid #d1d5db;
+}
+
+body.light-mode #teams-score .text-gray-400 {
+    color: #6b7280;
+}
+
+/* Back Card Content */
+.back-card-content p {
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    margin-top: clamp(0.75rem, 2vw, 1rem);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+body.light-mode .back-card-content p {
+    color: rgba(0, 0, 0, 0.8);
+}
+
+/* Loading Animation */
+.loading-spinner {
+    width: clamp(40px, 10vw, 50px);
+    height: clamp(40px, 10vw, 50px);
+    border: 5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: #f59e0b;
+    animation: spin 1s ease-in-out infinite;
+    margin: clamp(1.5rem, 5vw, 2rem) auto;
+}
+
+body.light-mode .loading-spinner {
+    border: 5px solid rgba(0, 0, 0, 0.1);
+    border-top-color: #f59e0b;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* High-Density Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .card, .movie-card, .modal-content {
+        box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.15);
+    }
+    .film-reel {
+        background-size: clamp(150px, 25vw, 250px);
+    }
+}
